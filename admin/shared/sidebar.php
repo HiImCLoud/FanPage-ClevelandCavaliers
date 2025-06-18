@@ -8,8 +8,8 @@
     <a href="dashboard.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : '' ?>">
         <i class="bi bi-speedometer2 me-2"></i> Dashboard
     </a>
-    <a href="movie-tracker.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'movie-tracker.php' ? 'active' : '' ?>">
-        <i class="bi bi-film me-2"></i> Movies
+    <a href="home-info.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'home-info.php' ? 'active' : '' ?>">
+        <i class="bi bi-house-door-fill me-2"></i> Home Info
     </a>
     <a href="admin.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'admin.php' ? 'active' : '' ?>">
         <i class="bi bi-people-fill me-2"></i> Admin List

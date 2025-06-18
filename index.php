@@ -1,6 +1,10 @@
 <?php
 include 'shared/config.php';
 $home = $conn->query("SELECT * FROM home_info LIMIT 1")->fetch_assoc();
+$heroImage = (!empty($home['image']) && file_exists(__DIR__ . '/' . $home['image']))
+    ? '/cavs/' . $home['image']
+    : '';
+
 $jerseys = $conn->query("SELECT * FROM jerseys");
 $players = $conn->query("SELECT * FROM players");
 $arenas = $conn->query("SELECT * FROM arenas ORDER BY arena_id ASC");
@@ -16,7 +20,55 @@ $sources = $conn->query("SELECT * FROM sources");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
+    <style>
+        #home {
+            background-image: url('<?= $heroImage ?>');
+            background-size: cover;
+            background-position: top center;
+            position: relative;
+            z-index: 1;
+            color: white;
+        }
+
+        #home::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            background-color: #000000;
+            opacity: 0.7;
+            z-index: -1;
+        }
+
+        #home .home {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #home h1 {
+            text-transform: uppercase;
+            text-align: center;
+            font-size: 6rem;
+            color: #800000;
+            -webkit-text-stroke: 0.1px #FFA500;
+            margin-bottom: 15px;
+        }
+
+        #home p {
+            text-align: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+    </style>
     <title>Cleveland Cavaliers</title>
     <link rel="icon" href="assets/brand.png" type="image/png">
     <script src="featherextension.js"></script>
@@ -24,23 +76,25 @@ $sources = $conn->query("SELECT * FROM sources");
 
 <body>
     <?php include 'shared/navbar.php'; ?>
+
+
     <section id="home">
         <div class="home container">
-            <h1>Cleveland Cavaliers</h1>
-            <p>
-                The Cleveland Cavaliers, often referred to as the Cavs, are an American professional basketball team
-                based in Cleveland. The Cavaliers compete in the National Basketball Association as a member of the
-                Central Division of the Eastern Conference.
-            </p>
-            <div class="view-more-btn">
-                <a href="https://www.nba.com/cavaliers/" target="_blank">
-                    <button>
-                        <span>View More</span>
-                    </button>
-                </a>
-            </div>
+            <h1><?= htmlspecialchars($home['title']) ?></h1>
+            <p><?= nl2br(htmlspecialchars($home['description'])) ?></p>
+
+            <?php if (!empty($home['button_link']) && !empty($home['button_text'])): ?>
+                <div class="view-more-btn">
+                    <a href="<?= htmlspecialchars($home['button_link']) ?>" target="_blank">
+                        <button>
+                            <span><?= htmlspecialchars($home['button_text']) ?></span>
+                        </button>
+                    </a>
+                </div>
+            <?php endif; ?>
         </div>
     </section>
+
 
     <section id="jerseys">
         <div class="jerseys container">
@@ -57,7 +111,7 @@ $sources = $conn->query("SELECT * FROM sources");
                     </div>
                 <?php endwhile; ?>
             </div>
-            <div class="see-more-btn">
+            <div class="see-more-btn">+
                 <a href="https://www.cavshistory.com/jerseys/" target="_blank">
                     <button><span>See More</span><i data-feather="arrow-right-circle"></i></button>
                 </a>

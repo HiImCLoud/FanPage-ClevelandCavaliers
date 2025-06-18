@@ -6,8 +6,8 @@
       $(".preloader").delay(200).fadeOut(500);
     }
   }
-  function initMovieTable() {
-    var table = new DataTable("#movie-table", {
+  function initHomeTable() {
+    var table = new DataTable("#home-table", {
       layout: {
         topStart: {
           buttons: [],
@@ -69,7 +69,7 @@
   });
 
   function init() {
-    initMovieTable();
+    initHomeTable();
     initAdminTable();
   }
   $(window).on("load", function () {
