@@ -2,9 +2,10 @@
 include 'shared/config.php';
 require 'shared/auth_check.php';
 
-// INSERT
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['add_jersey'])) {
-    $title = $_POST['title'];
+// ADD ARENA
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['add_arena'])) {
+    $name = $_POST['name'];
+    $yearRange = $_POST['year_range'];
 
     if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
         $originalName = basename($_FILES['image']['name']);
@@ -27,22 +28,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['add_jersey'])) {
 
         move_uploaded_file($_FILES['image']['tmp_name'], $targetPath);
 
-        $stmt = $conn->prepare("INSERT INTO jerseys (title, image_path) VALUES (?, ?)");
-        $stmt->bind_param("ss", $title, $relativePath);
+        $stmt = $conn->prepare("INSERT INTO arenas (name, year_range, image_path) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $name, $yearRange, $relativePath);
         $stmt->execute();
 
-        echo "<script>alert('Jersey added successfully!'); window.location.href = 'jerseys-info.php';</script>";
+        echo "<script>alert('Arena added successfully!'); window.location.href = 'arenas-info.php';</script>";
         exit;
     } else {
-        echo "<script>alert('Image upload failed.'); window.location.href = 'jerseys-info.php';</script>";
+        echo "<script>alert('Image upload failed.'); window.location.href = 'arenas-info.php';</script>";
         exit;
     }
 }
 
-// UPDATE
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update_jersey'])) {
-    $jerseyId = $_POST['jersey_id'];
-    $title = $_POST['title'];
+// UPDATE ARENA
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update_arena'])) {
+    $arenaId = $_POST['arena_id'];
+    $name = $_POST['name'];
+    $yearRange = $_POST['year_range'];
 
     if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
         $originalName = basename($_FILES['image']['name']);
@@ -65,43 +67,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update_jersey'])) {
 
         move_uploaded_file($_FILES['image']['tmp_name'], $targetPath);
 
-        $stmt = $conn->prepare("UPDATE jerseys SET title = ?, image_path = ? WHERE jersey_id = ?");
-        $stmt->bind_param("ssi", $title, $relativePath, $jerseyId);
+        $stmt = $conn->prepare("UPDATE arenas SET name=?, year_range=?, image_path=? WHERE arena_id=?");
+        $stmt->bind_param("sssi", $name, $yearRange, $relativePath, $arenaId);
     } else {
-        $stmt = $conn->prepare("UPDATE jerseys SET title = ? WHERE jersey_id = ?");
-        $stmt->bind_param("si", $title, $jerseyId);
+        $stmt = $conn->prepare("UPDATE arenas SET name=?, year_range=? WHERE arena_id=?");
+        $stmt->bind_param("ssi", $name, $yearRange, $arenaId);
     }
 
     $stmt->execute();
-    echo "<script>alert('Jersey updated successfully!'); window.location.href = 'jerseys-info.php';</script>";
+    echo "<script>alert('Arena updated successfully!'); window.location.href = 'arenas-info.php';</script>";
     exit;
 }
 
-// DELETE
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['delete_jersey'])) {
-    $jerseyId = $_POST['jersey_id'];
-
-    $img = $conn->prepare("SELECT image_path FROM jerseys WHERE jersey_id = ?");
-    $img->bind_param("i", $jerseyId);
-    $img->execute();
-    $result = $img->get_result();
-
-    if ($result->num_rows > 0) {
-        $imgData = $result->fetch_assoc();
-        $filePath = dirname(__DIR__) . '/' . $imgData['image_path'];
-        if (file_exists($filePath)) unlink($filePath);
-    }
-
-    $stmt = $conn->prepare("DELETE FROM jerseys WHERE jersey_id = ?");
-    $stmt->bind_param("i", $jerseyId);
+// DELETE ARENA
+if (isset($_GET['delete'])) {
+    $id = $_GET['delete'];
+    $stmt = $conn->prepare("DELETE FROM arenas WHERE arena_id = ?");
+    $stmt->bind_param("i", $id);
     $stmt->execute();
 
-    echo "<script>alert('Jersey deleted successfully!'); window.location.href = 'jerseys-info.php';</script>";
+    echo "<script>alert('Arena deleted successfully!'); window.location.href = 'arenas-info.php';</script>";
     exit;
 }
 
-// FETCH
-$jerseys = $conn->query("SELECT * FROM jerseys ORDER BY created_at DESC");
+// FETCH ARENAS
+$arenas = $conn->query("SELECT * FROM arenas ORDER BY created_at DESC");
 ?>
 
 <!DOCTYPE html>
@@ -110,7 +100,7 @@ $jerseys = $conn->query("SELECT * FROM jerseys ORDER BY created_at DESC");
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Cavs | Jerseys Info</title>
+    <title>Cavs | Arenas Info</title>
     <link rel="shortcut icon" href="img/shortcut-icon.png?v=<?= time(); ?>" type="image/x-icon">
     <?php include 'shared/css.php'; ?>
 </head>
@@ -121,59 +111,65 @@ $jerseys = $conn->query("SELECT * FROM jerseys ORDER BY created_at DESC");
 
     <div class="content p-5">
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-            <h1 class="m-0">System Jerseys Info</h1>
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addJerseyModal">
-                <i class="bi bi-plus-square"></i> Add Jersey
+            <h1 class="m-0">System Arenas Info</h1>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addArenaModal">
+                <i class="bi bi-plus-square"></i> Add Arena
             </button>
         </div>
 
         <hr>
 
         <div class="table-responsive">
-            <table id="jerseys-table" class="table table-bordered">
+            <table id="arenas-table" class="table table-bordered">
                 <thead>
                     <tr>
                         <th>Preview</th>
-                        <th>Title</th>
+                        <th>Name</th>
+                        <th>Year Range</th>
                         <th>Created At</th>
-                        <th>Actions</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($row = $jerseys->fetch_assoc()): ?>
+                    <?php while ($row = $arenas->fetch_assoc()): ?>
                         <tr>
                             <td>
                                 <a href="/cavs/<?= htmlspecialchars($row['image_path']) ?>" target="_blank">
                                     <img src="/cavs/<?= htmlspecialchars($row['image_path']) ?>" style="height: 80px; border: 1px solid #ccc;">
                                 </a>
                             </td>
-                            <td><?= htmlspecialchars($row['title']) ?></td>
+                            <td><?= htmlspecialchars($row['name']) ?></td>
+                            <td><?= htmlspecialchars($row['year_range']) ?></td>
                             <td><?= date("Y-m-d H:i", strtotime($row['created_at'])) ?></td>
                             <td>
-                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#updateJerseyModal<?= $row['jersey_id'] ?>">
-                                    <i class="bi bi-pencil"></i> Edit
+                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#updateArenaModal<?= $row['arena_id'] ?>">
+                                    <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteJerseyModal<?= $row['jersey_id'] ?>">
-                                    <i class="bi bi-trash"></i> Delete
-                                </button>
+                                <a href="?delete=<?= $row['arena_id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this arena?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
                             </td>
                         </tr>
 
-                        <!-- UPDATE MODAL -->
-                        <div class="modal fade" id="updateJerseyModal<?= $row['jersey_id'] ?>" tabindex="-1" aria-hidden="true">
+                        <!-- Update Arena Modal -->
+                        <div class="modal fade" id="updateArenaModal<?= $row['arena_id'] ?>" tabindex="-1" aria-labelledby="updateArenaModalLabel<?= $row['arena_id'] ?>" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered modal-lg">
                                 <div class="modal-content">
                                     <form method="POST" enctype="multipart/form-data">
-                                        <input type="hidden" name="update_jersey" value="1">
-                                        <input type="hidden" name="jersey_id" value="<?= $row['jersey_id'] ?>">
+                                        <input type="hidden" name="update_arena" value="1">
+                                        <input type="hidden" name="arena_id" value="<?= $row['arena_id'] ?>">
                                         <div class="modal-header bg-warning text-white">
-                                            <h5 class="modal-title text-dark">Edit Jersey</h5>
+                                            <h5 class="modal-title text-dark">Update Arena</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
                                         <div class="modal-body">
                                             <div class="mb-3">
-                                                <label class="form-label">Title</label>
-                                                <input type="text" name="title" class="form-control" value="<?= htmlspecialchars($row['title']) ?>" required>
+                                                <label class="form-label">Name</label>
+                                                <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($row['name']) ?>" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Year Range</label>
+                                                <input type="text" name="year_range" class="form-control" value="<?= htmlspecialchars($row['year_range']) ?>" placeholder="e.g., 1999–2009">
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Change Image (optional)</label>
@@ -188,50 +184,30 @@ $jerseys = $conn->query("SELECT * FROM jerseys ORDER BY created_at DESC");
                                 </div>
                             </div>
                         </div>
-
-                        <!-- DELETE MODAL -->
-                        <div class="modal fade" id="deleteJerseyModal<?= $row['jersey_id'] ?>" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                    <form method="POST">
-                                        <input type="hidden" name="delete_jersey" value="1">
-                                        <input type="hidden" name="jersey_id" value="<?= $row['jersey_id'] ?>">
-                                        <div class="modal-header bg-danger text-white">
-                                            <h5 class="modal-title">Delete Jersey</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            Are you sure you want to delete <strong><?= htmlspecialchars($row['title']) ?></strong>?
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
-                                            <button class="btn btn-danger" type="submit">Delete</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
                     <?php endwhile; ?>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- ADD MODAL -->
-    <div class="modal fade" id="addJerseyModal" tabindex="-1" aria-hidden="true">
+    <!-- Add Arena Modal -->
+    <div class="modal fade" id="addArenaModal" tabindex="-1" aria-labelledby="addArenaModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <form method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="add_jersey" value="1">
+                    <input type="hidden" name="add_arena" value="1">
                     <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title text-white">Add Jersey</h5>
+                        <h5 class="modal-title text-white">Add Arena</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label">Title</label>
-                            <input type="text" name="title" class="form-control" placeholder="Enter jersey title" required>
+                            <label class="form-label">Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="Enter arena name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Year Range</label>
+                            <input type="text" name="year_range" class="form-control" placeholder="e.g., 2001–2012">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Image</label>
@@ -239,7 +215,7 @@ $jerseys = $conn->query("SELECT * FROM jerseys ORDER BY created_at DESC");
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-primary" type="submit">Save Jersey</button>
+                        <button class="btn btn-primary" type="submit">Save Arena</button>
                     </div>
                 </form>
             </div>

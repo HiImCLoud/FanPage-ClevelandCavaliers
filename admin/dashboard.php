@@ -20,6 +20,7 @@ $adminsCount = mysqli_fetch_assoc($adminsResult)['total_admins'];
 
 <body>
     <?php include 'shared/sidebar.php'; ?>
+    <div class="preloader"></div>
     <div class="content p-5">
         <h1 class="text-start mb-2">Dashboard</h1>
         <p class="text-start text-tomato">Home</p>

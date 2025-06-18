@@ -50,6 +50,28 @@
     });
   }
 
+  function initArenaTable() {
+    var table = new DataTable("#arenas-table", {
+      layout: {
+        topStart: {
+          buttons: [],
+        },
+      },
+      responsive: true,
+    });
+  }
+
+  function initSourceTable() {
+    var table = new DataTable("#sources-table", {
+      layout: {
+        topStart: {
+          buttons: [],
+        },
+      },
+      responsive: true,
+    });
+  }
+
   $(document).ready(function () {
     $("#togglePasswordBtn").on("click", function () {
       const passwordInput = $("#passwordInput");
@@ -93,7 +115,9 @@
   function init() {
     initHomeTable();
     initJerseysTable();
+    initArenaTable();
     initPlayersTable();
+    initSourceTable();
     initAdminTable();
   }
   $(window).on("load", function () {

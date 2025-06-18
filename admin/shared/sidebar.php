@@ -21,7 +21,9 @@
     <a href="arenas-info.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'arenas-info.php' ? 'active' : '' ?>">
         <i class="bi bi-building-fill me-2"></i>Arena Info
     </a>
-
+    <a href="sources-info.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'sources-info.php' ? 'active' : '' ?>">
+        <i class="bi bi-sourceforge me-2"></i>Sources Info
+    </a>
 
     <a href="admin.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'admin.php' ? 'active' : '' ?>">
         <i class="bi bi-people-fill me-2"></i> Admin List

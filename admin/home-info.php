@@ -68,6 +68,7 @@ $imagePath = !empty($home['image']) ? $home['image'] : '';
 
 <body>
     <?php include 'shared/sidebar.php'; ?>
+    <div class="preloader"></div>
 
     <div class="content p-5">
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
