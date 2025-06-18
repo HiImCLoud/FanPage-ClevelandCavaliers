@@ -17,6 +17,28 @@
     });
   }
 
+  function initJerseysTable() {
+    var table = new DataTable("#jerseys-table", {
+      layout: {
+        topStart: {
+          buttons: [],
+        },
+      },
+      responsive: true,
+    });
+  }
+
+  function initPlayersTable() {
+    var table = new DataTable("#players-table", {
+      layout: {
+        topStart: {
+          buttons: [],
+        },
+      },
+      responsive: true,
+    });
+  }
+
   function initAdminTable() {
     var table = new DataTable("#admin-table", {
       layout: {
@@ -70,6 +92,8 @@
 
   function init() {
     initHomeTable();
+    initJerseysTable();
+    initPlayersTable();
     initAdminTable();
   }
   $(window).on("load", function () {
